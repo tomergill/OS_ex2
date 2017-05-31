@@ -9,9 +9,7 @@
 
 #define DEBUG
 
-static int board[ROWS][COLS];
-
-void printBoard() {
+void printBoard(int board[ROWS][COLS]) {
     int row, col;
 
     for (row = 0; row < ROWS; ++row) {
@@ -30,7 +28,7 @@ void printBoard() {
     }
 }
 
-void boardFromInput() {
+void boardFromInput(int board[ROWS][COLS]) {
     int row, col;
 
     scanf("%d", &board[0][0]);
@@ -47,8 +45,14 @@ void boardFromInput() {
 
 void SIGUSR1Handler(int signal) {
     if (signal == SIGUSR1) {
-        boardFromInput();
-        printBoard();
+        int board[ROWS][COLS], i, j;
+        for (i = 0; i < ROWS; ++i) {
+            for (j = 0; j < COLS; ++j) {
+                board[i][j] = 0;
+            }
+        }
+        boardFromInput(board);
+        printBoard(board);
     }
 }
 
@@ -64,11 +68,6 @@ int main() {
     struct sigaction sigActUSR, sigActINT;
     sigset_t sigSetUSR, sigSetINT;
 
-    for (i = 0; i < ROWS; ++i) {
-        for (j = 0; j < COLS; ++j) {
-            board[i][j] = 0;
-        }
-    }
 
     sigActUSR.sa_handler = SIGUSR1Handler;
     sigemptyset(&sigSetUSR);
@@ -95,7 +94,7 @@ int main() {
     char buffer[256];
     buffer[0] = '\0';
     while (1) {
-        #ifdef DEBUG
+#ifdef DEBUG
         printf("type \"usr\" for SIGUSR1 (inserting a board).\ntype \"cls\" "
                        "for SIGINT (closing the program).\n");
         scanf("%s", buffer);
@@ -105,6 +104,6 @@ int main() {
             kill(getpid(), SIGINT);
         else
             continue;
-        #endif
+#endif
     }
 }
