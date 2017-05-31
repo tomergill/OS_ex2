@@ -21,10 +21,10 @@ void printBoard() {
              * border, in format of length 4.
              * otherwise, print blank tile (5 spaces).
              */
-            if (board[row][col])
+            if (board[row][col] != 0)
                 printf("| %.4d ", board[row][col]);
             else
-                printf("|       ");
+                printf("|      ");
         }
         printf("|\n");
     }
@@ -42,7 +42,7 @@ void boardFromInput() {
         }
         col = 0;
     }
-    scanf("\n");
+    //scanf("\n");
 }
 
 void SIGUSR1Handler(int signal) {
