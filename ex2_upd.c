@@ -11,10 +11,10 @@
 #define ROWS 4
 #define COLS 4
 
-static int **globalBoard;
+static int board[ROWS][COLS];
 static pid_t globalPidToSig;
 
-void printBoardAsLine(int board[ROWS][COLS])
+void printBoardAsLine()
 {
     int row, col;
 
@@ -26,7 +26,9 @@ void printBoardAsLine(int board[ROWS][COLS])
             printf(",%d", board[row][col]);
         }
         col = 0;
+        printf("\n");
     }
+    printf("\n");
 }
 
 void randomTile(int tile[2])
@@ -45,7 +47,7 @@ void SIGALRMHandler(int signal)
         {
             for (j = 0; j < COLS; ++j)
             {
-                if (globalBoard[i][j] == 0)
+                if (board[i][j] == 0)
                 {
                     places[length][0] = i;
                     places[length][1] = j;
@@ -54,28 +56,34 @@ void SIGALRMHandler(int signal)
             }
         }
 
-        int place = rand() % length;
+
         if (length)
         {
-            if (globalBoard[places[place][0]][places[place][1]] == 0)
-                globalBoard[places[place][0]][places[place][1]] = 2;
+            int place = rand() % length;
+            if (board[places[place][0]][places[place][1]] == 0)
+                board[places[place][0]][places[place][1]] = 2;
 
-            printBoardAsLine(globalBoard);
+            printBoardAsLine();
             if (kill(globalPidToSig, SIGUSR1) != 0)
                 perror("kill error in SIGALRMHandler");
         }
 
-        alarm(rand() % 5 + 1); //new x
+        int x = rand() % 5 + 1;
+        printf("setting alarm for %d seconds\n", x);
+        //alarm(x); //new x
     }
 }
 
 void SIGINTHandler(int signal)
 {
-    alarm(0);
-    exit(EXIT_SUCCESS);
+    if (signal == SIGINT)
+    {
+        alarm(0);
+        exit(EXIT_SUCCESS);
+    }
 }
 
-void newGame(int board[ROWS][COLS], pid_t pidToSig)
+void newGame(pid_t pidToSig)
 {
     int i, j, tile[2], otherTile[2], x;
     for (i = 0; i < ROWS; ++i) {
@@ -95,23 +103,133 @@ void newGame(int board[ROWS][COLS], pid_t pidToSig)
     board[tile[0]][tile[1]] = 2;
     board[otherTile[0]][otherTile[1]] = 2;
 
-    printBoardAsLine(board);
+    printBoardAsLine();
 
     if (kill(pidToSig, SIGUSR1) != 0)
         perror("error first kill SIGUSR1 for printing");
 
     printf("\nsetting alarm to %d seconds\n", x);
-    alarm(x);
+    //alarm(x);
+}
+
+int isRestOfRowNotEmptyLeft(int row, int col)
+{
+    if (row < 0 || row >= ROWS)
+        return 0;
+    int sum = 0, j;
+    for (j = col; j < COLS; ++j)
+        sum += board[row][j];
+    return sum;
+}
+
+int isRestOfRowNotEmptyRight(int row, int col)
+{
+    if (row < 0 || row >= ROWS)
+        return 0;
+    int sum = 0, j;
+    for (j = col; j >= 0; --j)
+        sum += board[row][j];
+    return sum;
+}
+
+void moveLeft()
+{
+    int i, j, k, temp;
+
+    for (i = 0; i < ROWS; ++i)
+    {
+            for (j = 0; j < COLS; ++j) {
+                while (board[i][j] == 0 &&
+                        isRestOfRowNotEmptyLeft(i, j)) {
+                    for (k = j + 1; k < COLS; ++k) {
+                        board[i][k - 1] = board[i][k];
+                    }
+                    board[i][COLS - 1] = 0;
+                }
+            }
+    }
+
+    for (i = 0; i < ROWS; ++i)
+    {
+        for (j = 1; j < COLS; ++j) //starts from second column
+        {
+            if (board[i][j] == 0) //empty cell, just continue
+                continue;
+            if (board[i][j] == board[i][j - 1]) //equal tiles, add
+            {
+                board[i][j - 1] += board[i][j];
+                board[i][j] = 0;
+            }
+//            else if (board[i][j - 1] == 0) //left cell is empty
+//            {
+//                temp = j;
+//
+//                /*
+//                 * while possible, move tile left.
+//                 */
+//                while (j - 1 >= 0 && board[i][j - 1] == 0)
+//                {
+//                    board[i][j - 1] = board[i][j];
+//                    board[i][j] = 0;
+//                    j--;
+//                }
+//                j = temp;
+//            }
+        }
+    }
+}
+
+void moveRight()
+{
+    int i, j, k, temp;
+
+    for (i = 0; i < ROWS; ++i)
+    {
+            for (j = COLS - 1; j >= 0; --j) {
+                while (board[i][j] == 0 &&
+                        isRestOfRowNotEmptyRight(i, j)) {
+                    for (k = j - 1; k >= 0; --k) {
+                        board[i][k + 1] = board[i][k];
+                    }
+                    board[i][0] = 0;
+                }
+            }
+    }
+
+    for (i = 0; i < ROWS; ++i)
+    {
+        for (j = COLS - 2; j >= 0; --j) //starts from second last column
+        {
+            if (board[i][j] == 0) //empty cell, just continue
+                continue;
+            if (board[i][j] == board[i][j + 1]) //equal tiles, add
+            {
+                board[i][j + 1] += board[i][j];
+                board[i][j] = 0;
+            }
+//            else if (board[i][j + 1] == 0) //left cell is empty
+//            {
+//                temp = j;
+//
+//                /*
+//                 * while possible, move tile left.
+//                 */
+//                while (j + 1 < ROWS && board[i][j + 1] == 0)
+//                {
+//                    board[i][j + 1] = board[i][j];
+//                    board[i][j] = 0;
+//                    j++;
+//                }
+//                j = temp;
+//            }
+        }
+    }
 }
 
 int main(int argc, char *argv[])
 {
-    int board[ROWS][COLS], x;
     pid_t pidToSig;
-    int tile[2], otherTile[2];
     struct sigaction sigActALRM, sigActINT;
-
-    globalBoard = board;
 
     srand(time(NULL));
 
@@ -141,7 +259,48 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    newGame(board, pidToSig);
+    newGame(pidToSig);
+    int key;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
+    while (1)
+    {
+        system("stty cbreak -echo");
+        key = getchar();
+        system("stty cooked echo");
 
-    while (1);
+        alarm(0);
+
+        switch (key)
+        {
+            case 'a':
+            case 'A':
+                moveLeft();
+                break;
+            case 'd':
+            case 'D':
+                moveRight();
+                break;
+            case 's':
+            case 'S':
+                newGame(pidToSig);
+                continue;
+            case 'q':
+            case 'Q':
+                kill(getpid(), SIGINT);
+                break;
+            case 'b':
+            case 'B':
+                kill(getpid(), SIGALRM);
+                continue;
+            default:
+                continue;
+        }
+        printBoardAsLine();
+        int x = rand() % 5 + 1;
+        printf("\nsetting alarm to %d seconds\n", x);
+//        alarm(x);
+        kill(pidToSig, SIGUSR1);
+    }
+#pragma clang diagnostic pop
 }
