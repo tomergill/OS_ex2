@@ -7,7 +7,7 @@
 #define ROWS 4
 #define COLS 4
 
-#define DEBUG
+#define DEBUG 1 //for debugging purposes
 
 void printBoard(int board[ROWS][COLS]) {
     int row, col;
@@ -94,7 +94,7 @@ int main() {
     char buffer[256];
     buffer[0] = '\0';
     while (1) {
-#ifdef DEBUG
+#if DEBUG
         printf("type \"usr\" for SIGUSR1 (inserting a board).\ntype \"cls\" "
                        "for SIGINT (closing the program).\n");
         scanf("%s", buffer);
