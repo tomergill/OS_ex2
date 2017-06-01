@@ -59,7 +59,7 @@ void SIGUSR1Handler(int signal) {
 void SIGINTHandler(int signal) {
     if (signal == SIGINT) {
         printf("BYE BYE\n");
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
 }
 
@@ -77,7 +77,7 @@ int main() {
 
     if (sigaction(SIGUSR1, &sigActUSR, NULL) != 0) {
         perror("sigaction of SIGUSR1 error");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     sigActINT.sa_handler = SIGINTHandler;
@@ -88,7 +88,7 @@ int main() {
 
     if (sigaction(SIGINT, &sigActINT, NULL) != 0) {
         perror("sigaction of SIGINT error");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     char buffer[256];
