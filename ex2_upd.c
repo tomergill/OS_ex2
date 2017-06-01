@@ -132,6 +132,26 @@ int isRestOfRowNotEmptyRight(int row, int col)
     return sum;
 }
 
+int isRestOfColNotEmptyUp(int row, int col)
+{
+    if (col < 0 || col >= COLS)
+        return 0;
+    int sum = 0, i;
+    for (i = row; i < ROWS; ++i)
+        sum += board[i][col];
+    return sum;
+}
+
+int isRestOfColNotEmptyDown(int row, int col)
+{
+    if (col < 0 || col >= COLS)
+        return 0;
+    int sum = 0, i;
+    for (i = row; i >= 0; --i)
+        sum += board[i][col];
+    return sum;
+}
+
 void moveLeft()
 {
     int i, j, k, temp;
@@ -160,21 +180,21 @@ void moveLeft()
                 board[i][j - 1] += board[i][j];
                 board[i][j] = 0;
             }
-//            else if (board[i][j - 1] == 0) //left cell is empty
-//            {
-//                temp = j;
-//
-//                /*
-//                 * while possible, move tile left.
-//                 */
-//                while (j - 1 >= 0 && board[i][j - 1] == 0)
-//                {
-//                    board[i][j - 1] = board[i][j];
-//                    board[i][j] = 0;
-//                    j--;
-//                }
-//                j = temp;
-//            }
+            else if (board[i][j - 1] == 0) //left cell is empty
+            {
+                temp = j;
+
+                /*
+                 * while possible, move tile left.
+                 */
+                while (j - 1 >= 0 && board[i][j - 1] == 0)
+                {
+                    board[i][j - 1] = board[i][j];
+                    board[i][j] = 0;
+                    j--;
+                }
+                j = temp;
+            }
         }
     }
 }
@@ -207,21 +227,114 @@ void moveRight()
                 board[i][j + 1] += board[i][j];
                 board[i][j] = 0;
             }
-//            else if (board[i][j + 1] == 0) //left cell is empty
-//            {
-//                temp = j;
-//
-//                /*
-//                 * while possible, move tile left.
-//                 */
-//                while (j + 1 < ROWS && board[i][j + 1] == 0)
-//                {
-//                    board[i][j + 1] = board[i][j];
-//                    board[i][j] = 0;
-//                    j++;
-//                }
-//                j = temp;
-//            }
+            else if (board[i][j + 1] == 0) //left cell is empty
+            {
+                temp = j;
+
+                /*
+                 * while possible, move tile left.
+                 */
+                while (j + 1 < COLS && board[i][j + 1] == 0)
+                {
+                    board[i][j + 1] = board[i][j];
+                    board[i][j] = 0;
+                    j++;
+                }
+                j = temp;
+            }
+        }
+    }
+}
+
+void moveUp()
+{
+    int i, j, k, temp;
+
+    for (j = 0; j < COLS; ++j)
+    {
+        for (i = 0; i < ROWS; ++i) {
+            while (board[i][j] == 0 &&
+                   isRestOfColNotEmptyUp(i, j)) {
+                for (k = i + 1; k < ROWS; ++k) {
+                    board[k - 1][j] = board[k][j];
+                }
+                board[ROWS - 1][j] = 0;
+            }
+        }
+    }
+
+    for (j = 0; j < COLS; ++j)
+    {
+        for (i = 1; i < ROWS; ++i)  //starts from second column
+        {
+            if (board[i][j] == 0) //empty cell, just continue
+                continue;
+            if (board[i][j] == board[i - 1][j]) //equal tiles, add
+            {
+                board[i - 1][j] += board[i][j];
+                board[i][j] = 0;
+            }
+            else if (board[i - 1][j] == 0) //upper cell is empty
+            {
+                temp = i;
+
+                /*
+                 * while possible, move tile left.
+                 */
+                while (i - 1 >= 0 && board[i - 1][j] == 0)
+                {
+                    board[i - 1][j] = board[i][j];
+                    board[i][j] = 0;
+                    i--;
+                }
+                i = temp;
+            }
+        }
+    }
+}
+
+void moveDown()
+{
+    int i, j, k, temp;
+
+    for (j = 0; j < COLS; ++j)
+    {
+        for (i = ROWS - 1; i >= 0; --i) {
+            while (board[i][j] == 0 && isRestOfColNotEmptyDown(i, j)) {
+                for (k = i - 1; k >= 0; --k) {
+                    board[k + 1][j] = board[k][j];
+                }
+                board[0][j] = 0;
+            }
+        }
+    }
+
+    for (j = 0; j < COLS; ++j)
+    {
+        for (i = ROWS - 2; i >= 0; --i) //starts from second last column
+        {
+            if (board[i][j] == 0) //empty cell, just continue
+                continue;
+            if (board[i][j] == board[i + 1][j]) //equal tiles, add
+            {
+                board[i + 1][j] += board[i][j];
+                board[i][j] = 0;
+            }
+            else if (board[i + 1][j] == 0) //lower cell is empty
+            {
+                temp = i;
+
+                /*
+                 * while possible, move tile left.
+                 */
+                while (i + 1 < ROWS && board[i + 1][j] == 0)
+                {
+                    board[i + 1][j] = board[i][j];
+                    board[i][j] = 0;
+                    i++;
+                }
+                i = temp;
+            }
         }
     }
 }
@@ -280,6 +393,14 @@ int main(int argc, char *argv[])
             case 'd':
             case 'D':
                 moveRight();
+                break;
+            case 'w':
+            case 'W':
+                moveUp();
+                break;
+            case 'x':
+            case 'X':
+                moveDown();
                 break;
             case 's':
             case 'S':
