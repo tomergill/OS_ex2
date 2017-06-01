@@ -68,9 +68,9 @@ void SIGALRMHandler(int signal)
                 perror("kill error in SIGALRMHandler");
         }
 
-        int x = rand() % 5 + 1;
-        printf("setting alarm for %d seconds\n", x);
-        //alarm(x); //new x
+        int x = rand() % 5 + 1;//new x
+        printf("setting alarm for %d seconds new alarm after alarm\n", x);
+        alarm(x);
     }
 }
 
@@ -108,8 +108,8 @@ void newGame(pid_t pidToSig)
     if (kill(pidToSig, SIGUSR1) != 0)
         perror("error first kill SIGUSR1 for printing");
 
-    printf("\nsetting alarm to %d seconds\n", x);
-    //alarm(x);
+    printf("\nsetting alarm to %d seconds in newGame()\n", x);
+    alarm(x);
 }
 
 int isRestOfRowNotEmptyLeft(int row, int col)
@@ -382,36 +382,41 @@ int main(int argc, char *argv[])
         key = getchar();
         system("stty cooked echo");
 
-        alarm(0);
-
         switch (key)
         {
             case 'a':
             case 'A':
+                alarm(0);
                 moveLeft();
                 break;
             case 'd':
             case 'D':
+                alarm(0);
                 moveRight();
                 break;
             case 'w':
             case 'W':
+                alarm(0);
                 moveUp();
                 break;
             case 'x':
             case 'X':
+                alarm(0);
                 moveDown();
                 break;
             case 's':
             case 'S':
+                alarm(0);
                 newGame(pidToSig);
                 continue;
             case 'q':
             case 'Q':
+                alarm(0);
                 kill(getpid(), SIGINT);
                 break;
             case 'b':
             case 'B':
+                alarm(0);
                 kill(getpid(), SIGALRM);
                 continue;
             default:
@@ -419,8 +424,8 @@ int main(int argc, char *argv[])
         }
         printBoardAsLine();
         int x = rand() % 5 + 1;
-        printf("\nsetting alarm to %d seconds\n", x);
-//        alarm(x);
+        printf("\nsetting alarm to %d seconds after move\n", x);
+        alarm(x);
         kill(pidToSig, SIGUSR1);
     }
 #pragma clang diagnostic pop
