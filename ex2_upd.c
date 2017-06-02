@@ -12,7 +12,7 @@
 #define COLS 4
 #define GOAL 2048
 
-#define DEBUG 1
+#define DEBUG 0
 
 static int board[ROWS][COLS];
 static pid_t globalPidToSig;
