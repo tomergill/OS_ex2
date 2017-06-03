@@ -10,9 +10,9 @@
 
 #define ROWS 4
 #define COLS 4
-#define GOAL 2048
 
-#define DEBUG 0
+
+//#define DEBUG 0
 
 static int board[ROWS][COLS];
 static pid_t globalPidToSig;
@@ -307,27 +307,7 @@ void moveDown() {
 }
 
 
-void gameEndCheck() {
-    int i, j, containsGoal = 0, fullBoard = 1;
 
-    //check if board contains a 2048 tile
-    for (i = 0; i < ROWS && !containsGoal; ++i) {
-        for (j = 0; j < COLS; ++j) {
-            if (board[i][j] == GOAL) {
-                containsGoal = 1;
-                break;
-            } else if (board[i][j] == 0) {
-                fullBoard = 0;
-            }
-        }
-    }
-
-    if (containsGoal || fullBoard) {
-        kill(globalPidToSig, SIGUSR2);
-        exit(EXIT_SUCCESS);
-    }
-
-}
 
 int main(int argc, char *argv[]) {
     pid_t pidToSig;
@@ -391,7 +371,7 @@ int main(int argc, char *argv[]) {
                 alarm(0);
                 newGame(pidToSig);
                 continue;
-#if DEBUG
+#ifdef DEBUG
             case 'q':
             case 'Q':
                 alarm(0);
@@ -407,7 +387,6 @@ int main(int argc, char *argv[]) {
                 continue;
         }
         printBoardAsLine();
-        gameEndCheck();
         int x = rand() % 5 + 1;
         alarm(x);
         kill(pidToSig, SIGUSR1);
