@@ -7,6 +7,7 @@
 #include <time.h>
 #include <signal.h>
 #include <unistd.h>
+#include <string.h>
 
 #define ROWS 4
 #define COLS 4
@@ -19,18 +20,24 @@ static pid_t globalPidToSig;
 
 void printBoardAsLine() {
     int row, col;
+    char buffer[6];
 
-    printf("%d", board[0][0]);
+    sprintf(buffer, "%d", board[0][0]);
+    if (write(STDOUT_FILENO, buffer, strlen(buffer)) == -1)
+        perror("error writing to file");
     col = 1;
     for (row = 0; row < ROWS; ++row) {
         for (; col < COLS; ++col) {
             //scanning each
-            printf(",%d", board[row][col]);
+            sprintf(buffer, ",%d", board[row][col]);
+            if (write(STDOUT_FILENO, buffer, strlen(buffer)) == -1)
+                perror("error writing to file");
         }
         col = 0;
 //        printf("\n");
     }
-    printf("\n");
+    if (write(STDOUT_FILENO, "\n", strlen("\n")) == -1)
+        perror("error writing to file");
 }
 
 void randomTile(int tile[2]) {

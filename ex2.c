@@ -26,7 +26,7 @@ void SIGALRMHandler(int signal) {
             if (unlink("temp.txt") != 0)
                 perror("error deleting temp.txt");
         }
-
+        sleep(1);
         exit(EXIT_SUCCESS);
     }
 }
@@ -65,6 +65,7 @@ void SIGINTHandler(int signal)
             if (unlink("temp.txt") != 0)
                 perror("error deleting temp.txt");
         }
+        sleep(1);
         exit(EXIT_SUCCESS);
     }
 }
