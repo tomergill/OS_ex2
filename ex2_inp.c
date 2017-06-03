@@ -33,6 +33,7 @@ void printBoard(int board[ROWS][COLS]) {
         }
         printf("|\n");
     }
+    printf("\n");
 }
 
 void boardFromInput(int board[ROWS][COLS]) {
@@ -99,8 +100,8 @@ void SIGUSR1Handler(int signal) {
             exit(EXIT_SUCCESS);
         }
         //result == NOT_OVER
-        if (kill(pidToSig, SIGUSR2) != 0)
-            perror("error sending end of printing signal");
+//        if (kill(pidToSig, SIGUSR2) != 0)
+//            perror("error sending end of printing signal");
     }
 }
 

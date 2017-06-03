@@ -79,6 +79,8 @@ void SIGALRMHandler(int signal) {
 void SIGINTHandler(int signal) {
     if (signal == SIGINT) {
         alarm(0);
+        system("stty cooked echo");
+        perror("INTTTTT");
         exit(EXIT_SUCCESS);
     }
 }
@@ -179,10 +181,14 @@ void moveLeft() {
                  */
                 while (j - 1 >= 0 && board[i][j - 1] == 0) {
                     board[i][j - 1] = board[i][j];
-                    board[i][j] = 0;
+//                    board[i][j] = 0;
+                    for (k = j + 1; k < COLS; ++k) {
+                        board[i][k - 1] = board[i][k];
+                    }
+                    board[i][COLS - 1] = 0;
                     j--;
                 }
-                j = temp;
+                //j = temp;
             }
         }
     }
@@ -221,10 +227,14 @@ void moveRight() {
                  */
                 while (j + 1 < COLS && board[i][j + 1] == 0) {
                     board[i][j + 1] = board[i][j];
-                    board[i][j] = 0;
+                    for (k = j - 1; k >= 0; --k) {
+                        board[i][k + 1] = board[i][k];
+                    }
+                    board[i][0] = 0;
+//                    board[i][j] = 0;
                     j++;
                 }
-                j = temp;
+//                j = temp;
             }
         }
     }
@@ -263,10 +273,14 @@ void moveUp() {
                  */
                 while (i - 1 >= 0 && board[i - 1][j] == 0) {
                     board[i - 1][j] = board[i][j];
-                    board[i][j] = 0;
+                    for (k = i + 1; k < ROWS; ++k) {
+                        board[k - 1][j] = board[k][j];
+                    }
+                    board[ROWS - 1][j] = 0;
+//                    board[i][j] = 0;
                     i--;
                 }
-                i = temp;
+//                i = temp;
             }
         }
     }
@@ -304,10 +318,14 @@ void moveDown() {
                  */
                 while (i + 1 < ROWS && board[i + 1][j] == 0) {
                     board[i + 1][j] = board[i][j];
-                    board[i][j] = 0;
+//                    board[i][j] = 0;
+                    for (k = i - 1; k >= 0; --k) {
+                        board[k + 1][j] = board[k][j];
+                    }
+                    board[0][j] = 0;
                     i++;
                 }
-                i = temp;
+//                i = temp;
             }
         }
     }

@@ -7,13 +7,14 @@
 #include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 
 pid_t updPid = 0, inpPid = 0;
 int fdUpd = -1, fdInp = -1;
 
 void SIGALRMHandler(int signal) {
     if (signal == SIGALRM) {
-        printf("!!!!!!ALARM!\n");
+//        printf("!!!!!!ALARM!\n");
         if (updPid)
             if (kill(updPid, SIGINT) != 0)
                 perror("error sending upd sigint");
@@ -23,48 +24,62 @@ void SIGALRMHandler(int signal) {
         if (fdUpd > 2) {
             if (close(fdUpd) != 0)
                 perror("error closing file in SIGALRMHandler");
+            if (close(fdInp) != 0) {
+                perror("error closing temp.txt 2");
+            }
             if (unlink("temp.txt") != 0)
                 perror("error deleting temp.txt");
         }
-        sleep(1);
+        wait(NULL);
+        wait(NULL);
         exit(EXIT_SUCCESS);
     }
 }
 
 void SIGUSR1Handler(int signal) {
     if (signal == SIGUSR1) {
-        printf("***********SIGUSR1\n");
+//        printf("***********SIGUSR1\n");
         //lseek(fdUpd, 0, SEEK_SET);
         if (kill(inpPid, SIGUSR1) != 0)
             perror("error sending inp sigusr1");
     }
 }
 
-void SIGUSR2Handler(int signal)
-{
-    if (signal == SIGUSR2)
-    {
-        printf("###########SIGUSR2\n");
-        //truncate("./temp.txt", 0);
-        //lseek(fdUpd, 0, SEEK_SET);
-    }
-}
+//void SIGUSR2Handler(int signal)
+//{
+//    if (signal == SIGUSR2)
+//    {
+//        printf("###########SIGUSR2\n");
+//        //truncate("./temp.txt", 0);
+//        //lseek(fdUpd, 0, SEEK_SET);
+//    }
+//}
 
 void SIGINTHandler(int signal)
 {
     if (signal == SIGINT)
     {
-        printf("~~~~~~~~~~SIGINT\n");
-        if (updPid)
-            if (kill(updPid, SIGINT) != 0)
-                perror("error sending SIGINT to upd");
+//        printf("~~~~~~~~~~SIGINT\n");
+        if (updPid) {
+            printf("sending sigint to upd\n");
+            if (kill(updPid, SIGKILL) != 0)
+                perror("error sending upd sigint");
+            wait(NULL);
+//            if (kill(inpPid, SIGKILL) != 0)
+//                perror("error killing inp");
+            //wait(NULL);
+        }
         if (fdUpd > 2 ) {
             if (close(fdUpd) != 0) {
-                perror("error closing temp.txt");
+                perror("error closing temp.txt 1");
+            }
+            if (close(fdInp) != 0) {
+                perror("error closing temp.txt 2");
             }
             if (unlink("temp.txt") != 0)
                 perror("error deleting temp.txt");
         }
+
         sleep(1);
         exit(EXIT_SUCCESS);
     }
@@ -91,7 +106,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    printf("setting alarm to %d seconds\n", y);
+//    printf("setting alarm to %d seconds\n", y);
     alarm(y);
 
     sigActUSR1.sa_flags = 0;
@@ -103,14 +118,14 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    sigActUSR2.sa_flags = 0;
+    /*sigActUSR2.sa_flags = 0;
     sigemptyset(&(sigActUSR2.sa_mask));
     sigaddset(&(sigActUSR2.sa_mask), SIGUSR1);
     sigActUSR2.sa_handler = SIGUSR2Handler;
     if (sigaction(SIGUSR2, &sigActUSR2, NULL) != 0) {
         perror("error with SIGUSR2 sigaction");
         exit(EXIT_FAILURE);
-    }
+    }*/
 
     sigActINT.sa_flags = 0;
     sigemptyset(&(sigActINT.sa_mask));
@@ -136,7 +151,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    printf("after opening temp.txt, before forks\n");
+//    printf("after opening temp.txt, before forks\n");
 
 
     //father continues
@@ -161,7 +176,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE); //only if execvp failed
     }
 
-    printf("after second fork to upd, starting busy-waiting\n");
+//    printf("after second fork to upd, starting busy-waiting\n");
 
 
 
@@ -186,7 +201,7 @@ int main(int argc, char *argv[])
             perror("execvp error in inp");
         exit(EXIT_FAILURE); //only if execvp failed
     }
-    printf("after fork to inp");
+//    printf("after fork to inp");
 
     //father continues endless loop, waiting for signals.
     while (1) {pause();}
