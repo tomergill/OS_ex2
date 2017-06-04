@@ -1,6 +1,9 @@
-//
-// Created by tomer on 02/06/17.
-//
+/*******************************************************************************
+ * Student name: Tomer Gill
+ * Student: 318459450
+ * Course Exercise Group: 01 (CS student, actual group is 89231-03)
+ * Exercise name: Exercise 2
+*******************************************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,22 +12,36 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 
+/*
+ * The pids of upd and inp processes, as the fd of "temp.txt" that each of
+ * them uses are global so signals handling functions can access them.
+ */
 pid_t updPid = 0, inpPid = 0;
 int fdUpd = -1, fdInp = -1;
 
-void SIGALRMHandler(int signal) {
-    if (signal == SIGALRM) {
-//        printf("!!!!!!ALARM!\n");
+/******************************************************************************
+ * function name: SIGALRMHandler
+ * The Input: The signal.
+ * The output: Closes the inp and upd processes, and the fd the uses. Also
+ * deletes "temp.txt" file and exits.
+ * The Function operation: Sends inp and upd SIGINT that closes them.
+*******************************************************************************/
+void SIGALRMHandler(int signal)
+{
+    if (signal == SIGALRM)
+    {
         if (updPid)
             if (kill(updPid, SIGINT) != 0)
                 perror("error sending upd sigint");
         if (inpPid)
             if (kill(inpPid, SIGINT) != 0)
                 perror("error sending inp sigint");
-        if (fdUpd > 2) {
+        if (fdUpd > 2)
+        {
             if (close(fdUpd) != 0)
                 perror("error closing file in SIGALRMHandler");
-            if (close(fdInp) != 0) {
+            if (close(fdInp) != 0)
+            {
                 perror("error closing temp.txt 2");
             }
             if (unlink("temp.txt") != 0)
@@ -36,44 +53,46 @@ void SIGALRMHandler(int signal) {
     }
 }
 
-void SIGUSR1Handler(int signal) {
-    if (signal == SIGUSR1) {
-//        printf("***********SIGUSR1\n");
-        //lseek(fdUpd, 0, SEEK_SET);
+/******************************************************************************
+ * function name: SIGUSR1Handler
+ * The Input: The signal.
+ * The output: Sends inp SIGUSR1.
+ * The Function operation: Sends the signal.
+*******************************************************************************/
+void SIGUSR1Handler(int signal)
+{
+    if (signal == SIGUSR1)
+    {
         if (kill(inpPid, SIGUSR1) != 0)
             perror("error sending inp sigusr1");
     }
 }
 
-//void SIGUSR2Handler(int signal)
-//{
-//    if (signal == SIGUSR2)
-//    {
-//        printf("###########SIGUSR2\n");
-//        //truncate("./temp.txt", 0);
-//        //lseek(fdUpd, 0, SEEK_SET);
-//    }
-//}
-
+/******************************************************************************
+ * function name: SIGINTHandler
+ * The Input: The signal.
+ * The output: Sends upd SIGINT, thus closing him and also closes the fds and
+ * deletes temp.txt and exits..
+ * The Function operation: As described.
+*******************************************************************************/
 void SIGINTHandler(int signal)
 {
     if (signal == SIGINT)
     {
-//        printf("~~~~~~~~~~SIGINT\n");
-        if (updPid) {
+        if (updPid)
+        {
             if (kill(updPid, SIGKILL) != 0)
                 perror("error sending upd sigint");
             wait(NULL);
-            //sleep(1);
-//            if (kill(inpPid, SIGKILL) != 0)
-//                perror("error killing inp");
-            //wait(NULL);
         }
-        if (fdUpd > 2 ) {
-            if (close(fdUpd) != 0) {
+        if (fdUpd > 2)
+        {
+            if (close(fdUpd) != 0)
+            {
                 perror("error closing temp.txt 1");
             }
-            if (close(fdInp) != 0) {
+            if (close(fdInp) != 0)
+            {
                 perror("error closing temp.txt 2");
             }
             if (unlink("temp.txt") != 0)
@@ -85,12 +104,20 @@ void SIGINTHandler(int signal)
     }
 }
 
+/******************************************************************************
+ * function name: main
+ * The Input: The time limit for the program.
+ * The output: 2048 game limited by the received time limit.
+ * The Function operation: Creates the "temp.txt" file connecting between the
+ * processes, starts the inp and upd processes, and then waits for signals.
+*******************************************************************************/
 int main(int argc, char *argv[])
 {
     int y;
     struct sigaction sigActALRM, sigActUSR1, sigActINT;
 
-    if (argc != 2) {
+    if (argc != 2)
+    {
         perror("usage error in ex2 main");
         exit(EXIT_FAILURE);
     }
@@ -101,12 +128,12 @@ int main(int argc, char *argv[])
     sigaddset(&(sigActALRM.sa_mask), SIGUSR1);
     sigaddset(&(sigActALRM.sa_mask), SIGUSR2);
     sigActALRM.sa_handler = SIGALRMHandler;
-    if (sigaction(SIGALRM, &sigActALRM, NULL) != 0) {
+    if (sigaction(SIGALRM, &sigActALRM, NULL) != 0)
+    {
         perror("error with SIGALRM sigaction");
         exit(EXIT_FAILURE);
     }
 
-//    printf("setting alarm to %d seconds\n", y);
     alarm(y);
 
     sigActUSR1.sa_flags = 0;
@@ -118,22 +145,14 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    /*sigActUSR2.sa_flags = 0;
-    sigemptyset(&(sigActUSR2.sa_mask));
-    sigaddset(&(sigActUSR2.sa_mask), SIGUSR1);
-    sigActUSR2.sa_handler = SIGUSR2Handler;
-    if (sigaction(SIGUSR2, &sigActUSR2, NULL) != 0) {
-        perror("error with SIGUSR2 sigaction");
-        exit(EXIT_FAILURE);
-    }*/
-
     sigActINT.sa_flags = 0;
     sigemptyset(&(sigActINT.sa_mask));
     sigaddset(&(sigActINT.sa_mask), SIGUSR1);
     sigaddset(&(sigActINT.sa_mask), SIGUSR2);
     sigaddset(&(sigActINT.sa_mask), SIGALRM);
     sigActINT.sa_handler = SIGINTHandler;
-    if (sigaction(SIGINT, &sigActINT, NULL) != 0) {
+    if (sigaction(SIGINT, &sigActINT, NULL) != 0)
+    {
         perror("error with SIGINT sigaction");
         exit(EXIT_FAILURE);
     }
@@ -150,8 +169,6 @@ int main(int argc, char *argv[])
         perror("error opening temp.txt");
         exit(EXIT_FAILURE);
     }
-
-//    printf("after opening temp.txt, before forks\n");
 
 
     //father continues
@@ -176,9 +193,6 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE); //only if execvp failed
     }
 
-//    printf("after second fork to upd, starting busy-waiting\n");
-
-
 
     if ((inpPid = fork()) < 0)
     {
@@ -201,8 +215,7 @@ int main(int argc, char *argv[])
             perror("execvp error in inp");
         exit(EXIT_FAILURE); //only if execvp failed
     }
-//    printf("after fork to inp");
 
     //father continues endless loop, waiting for signals.
-    while (1) {pause();}
+    while (1) { pause(); }
 }

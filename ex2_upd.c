@@ -31,7 +31,8 @@ static pid_t globalPidToSig;
  * The Function operation: Row format is value-comma-value, from the
  * upper-left corner of the board left and down.
 *******************************************************************************/
-void PrintBoardAsLine() {
+void PrintBoardAsLine()
+{
     int row, col;
     char buffer[6];
 
@@ -39,8 +40,10 @@ void PrintBoardAsLine() {
     if (write(STDOUT_FILENO, buffer, strlen(buffer)) == -1)
         perror("error writing to file");
     col = 1;
-    for (row = 0; row < ROWS; ++row) {
-        for (; col < COLS; ++col) {
+    for (row = 0; row < ROWS; ++row)
+    {
+        for (; col < COLS; ++col)
+        {
             //scanning each
             sprintf(buffer, ",%d", board[row][col]);
             if (write(STDOUT_FILENO, buffer, strlen(buffer)) == -1)
@@ -59,7 +62,8 @@ void PrintBoardAsLine() {
  * The output: Puts in said array random cordinates.
  * The Function operation:
 *******************************************************************************/
-void RandomTile(int tile[2]) {
+void RandomTile(int tile[2])
+{
     tile[0] = rand() % ROWS;
     tile[1] = rand() % COLS;
 }
@@ -73,13 +77,18 @@ void RandomTile(int tile[2]) {
  * prints the board afterward. Also randomly decides a next waiting time
  * between 1 and 5 included.
 *******************************************************************************/
-void SIGALRMHandler(int signal) {
-    if (signal == SIGALRM) {
+void SIGALRMHandler(int signal)
+{
+    if (signal == SIGALRM)
+    {
         int places[ROWS * COLS][2], length = 0, i, j;
 
-        for (i = 0; i < ROWS; ++i) {
-            for (j = 0; j < COLS; ++j) {
-                if (board[i][j] == 0) {
+        for (i = 0; i < ROWS; ++i)
+        {
+            for (j = 0; j < COLS; ++j)
+            {
+                if (board[i][j] == 0)
+                {
                     places[length][0] = i;
                     places[length][1] = j;
                     length++;
@@ -88,7 +97,8 @@ void SIGALRMHandler(int signal) {
         }
 
 
-        if (length) {
+        if (length)
+        {
             int place = rand() % length;
             if (board[places[place][0]][places[place][1]] == 0)
                 board[places[place][0]][places[place][1]] = 2;
@@ -112,8 +122,10 @@ void SIGALRMHandler(int signal) {
  * return writing into terminal (using the rows given us in the exercise) and
  * them exits.
 *******************************************************************************/
-void SIGINTHandler(int signal) {
-    if (signal == SIGINT) {
+void SIGINTHandler(int signal)
+{
+    if (signal == SIGINT)
+    {
         alarm(0);
         system("stty cooked echo");
 
@@ -130,10 +142,13 @@ void SIGINTHandler(int signal) {
  * places at random that will hold 0002 instead, then printing, sending the
  * signal and creating a new alarm.
 *******************************************************************************/
-void NewGame(pid_t pidToSig) {
+void NewGame(pid_t pidToSig)
+{
     int i, j, tile[2], otherTile[2], x;
-    for (i = 0; i < ROWS; ++i) {
-        for (j = 0; j < COLS; ++j) {
+    for (i = 0; i < ROWS; ++i)
+    {
+        for (j = 0; j < COLS; ++j)
+        {
             board[i][j] = 0;
         }
     }
@@ -141,7 +156,8 @@ void NewGame(pid_t pidToSig) {
     x = rand() % 5 + 1; //sets x between 1 to 5 included.
 
     RandomTile(tile);
-    do {
+    do
+    {
         RandomTile(otherTile);
     } while (tile[0] == otherTile[0] && tile[1] == otherTile[1]);
 
@@ -164,7 +180,8 @@ void NewGame(pid_t pidToSig) {
  * otherwise value > 0.
  * The Function operation: Goes left from [row][col] and sums the values.
 *******************************************************************************/
-int IsRestOfRowNotEmptyLeft(int row, int col) {
+int IsRestOfRowNotEmptyLeft(int row, int col)
+{
     if (row < 0 || row >= ROWS)
         return 0;
     int sum = 0, j;
@@ -180,7 +197,8 @@ int IsRestOfRowNotEmptyLeft(int row, int col) {
  * otherwise value > 0.
  * The Function operation: Goes right from [row][col] and sums the values.
 *******************************************************************************/
-int IsRestOfRowNotEmptyRight(int row, int col) {
+int IsRestOfRowNotEmptyRight(int row, int col)
+{
     if (row < 0 || row >= ROWS)
         return 0;
     int sum = 0, j;
@@ -196,7 +214,8 @@ int IsRestOfRowNotEmptyRight(int row, int col) {
  * otherwise value > 0.
  * The Function operation: Goes up from [row][col] and sums the values.
 *******************************************************************************/
-int IsRestOfColNotEmptyUp(int row, int col) {
+int IsRestOfColNotEmptyUp(int row, int col)
+{
     if (col < 0 || col >= COLS)
         return 0;
     int sum = 0, i;
@@ -212,7 +231,8 @@ int IsRestOfColNotEmptyUp(int row, int col) {
  * otherwise value > 0.
  * The Function operation: Goes down from [row][col] and sums the values.
 *******************************************************************************/
-int IsRestOfColNotEmptyDown(int row, int col) {
+int IsRestOfColNotEmptyDown(int row, int col)
+{
     if (col < 0 || col >= COLS)
         return 0;
     int sum = 0, i;
@@ -235,14 +255,18 @@ int IsRestOfColNotEmptyDown(int row, int col) {
  *      checked if can go more to the left - if so it continues as was done
  *      before, until it can no more go.
 *******************************************************************************/
-void MoveLeft() {
-    int i, j, k, temp;
+void MoveLeft()
+{
+    int i, j, k;
 
-    for (i = 0; i < ROWS; ++i) {
-        for (j = 0; j < COLS; ++j) {
-            while (board[i][j] == 0 &&
-                    IsRestOfRowNotEmptyLeft(i, j)) {
-                for (k = j + 1; k < COLS; ++k) {
+    for (i = 0; i < ROWS; ++i)
+    {
+        for (j = 0; j < COLS; ++j)
+        {
+            while (board[i][j] == 0 && IsRestOfRowNotEmptyLeft(i, j))
+            {
+                for (k = j + 1; k < COLS; ++k)
+                {
                     board[i][k - 1] = board[i][k];
                 }
                 board[i][COLS - 1] = 0;
@@ -250,7 +274,8 @@ void MoveLeft() {
         }
     }
 
-    for (i = 0; i < ROWS; ++i) {
+    for (i = 0; i < ROWS; ++i)
+    {
         for (j = 1; j < COLS; ++j) //starts from second column
         {
             if (board[i][j] == 0) //empty cell, just continue
@@ -259,23 +284,23 @@ void MoveLeft() {
             {
                 board[i][j - 1] += board[i][j];
                 board[i][j] = 0;
-            } else if (board[i][j - 1] == 0) //left cell is empty
+            }
+            else if (board[i][j - 1] == 0) //left cell is empty
             {
-                temp = j;
 
                 /*
                  * while possible, move tile left.
                  */
-                while (j - 1 >= 0 && board[i][j - 1] == 0) {
+                while (j - 1 >= 0 && board[i][j - 1] == 0)
+                {
                     board[i][j - 1] = board[i][j];
-//                    board[i][j] = 0;
-                    for (k = j + 1; k < COLS; ++k) {
+                    for (k = j + 1; k < COLS; ++k)
+                    {
                         board[i][k - 1] = board[i][k];
                     }
                     board[i][COLS - 1] = 0;
                     j--;
                 }
-                //j = temp;
             }
         }
     }
@@ -295,14 +320,18 @@ void MoveLeft() {
  *      checked if can go more to the right - if so it continues as was done
  *      before, until it can no more go.
 *******************************************************************************/
-void MoveRight() {
-    int i, j, k, temp;
+void MoveRight()
+{
+    int i, j, k;
 
-    for (i = 0; i < ROWS; ++i) {
-        for (j = COLS - 1; j >= 0; --j) {
-            while (board[i][j] == 0 &&
-                    IsRestOfRowNotEmptyRight(i, j)) {
-                for (k = j - 1; k >= 0; --k) {
+    for (i = 0; i < ROWS; ++i)
+    {
+        for (j = COLS - 1; j >= 0; --j)
+        {
+            while (board[i][j] == 0 && IsRestOfRowNotEmptyRight(i, j))
+            {
+                for (k = j - 1; k >= 0; --k)
+                {
                     board[i][k + 1] = board[i][k];
                 }
                 board[i][0] = 0;
@@ -310,7 +339,8 @@ void MoveRight() {
         }
     }
 
-    for (i = 0; i < ROWS; ++i) {
+    for (i = 0; i < ROWS; ++i)
+    {
         for (j = COLS - 2; j >= 0; --j) //starts from second last column
         {
             if (board[i][j] == 0) //empty cell, just continue
@@ -319,23 +349,23 @@ void MoveRight() {
             {
                 board[i][j + 1] += board[i][j];
                 board[i][j] = 0;
-            } else if (board[i][j + 1] == 0) //left cell is empty
+            }
+            else if (board[i][j + 1] == 0) //left cell is empty
             {
-                temp = j;
 
                 /*
                  * while possible, move tile left.
                  */
-                while (j + 1 < COLS && board[i][j + 1] == 0) {
+                while (j + 1 < COLS && board[i][j + 1] == 0)
+                {
                     board[i][j + 1] = board[i][j];
-                    for (k = j - 1; k >= 0; --k) {
+                    for (k = j - 1; k >= 0; --k)
+                    {
                         board[i][k + 1] = board[i][k];
                     }
                     board[i][0] = 0;
-//                    board[i][j] = 0;
                     j++;
                 }
-//                j = temp;
             }
         }
     }
@@ -356,14 +386,18 @@ void MoveRight() {
  *      checked if can go more to the top - if so it continues as was done
  *      before, until it can no more go.
 *******************************************************************************/
-void MoveUp() {
-    int i, j, k, temp;
+void MoveUp()
+{
+    int i, j, k;
 
-    for (j = 0; j < COLS; ++j) {
-        for (i = 0; i < ROWS; ++i) {
-            while (board[i][j] == 0 &&
-                    IsRestOfColNotEmptyUp(i, j)) {
-                for (k = i + 1; k < ROWS; ++k) {
+    for (j = 0; j < COLS; ++j)
+    {
+        for (i = 0; i < ROWS; ++i)
+        {
+            while (board[i][j] == 0 && IsRestOfColNotEmptyUp(i, j))
+            {
+                for (k = i + 1; k < ROWS; ++k)
+                {
                     board[k - 1][j] = board[k][j];
                 }
                 board[ROWS - 1][j] = 0;
@@ -371,7 +405,8 @@ void MoveUp() {
         }
     }
 
-    for (j = 0; j < COLS; ++j) {
+    for (j = 0; j < COLS; ++j)
+    {
         for (i = 1; i < ROWS; ++i)  //starts from second column
         {
             if (board[i][j] == 0) //empty cell, just continue
@@ -380,23 +415,23 @@ void MoveUp() {
             {
                 board[i - 1][j] += board[i][j];
                 board[i][j] = 0;
-            } else if (board[i - 1][j] == 0) //upper cell is empty
+            }
+            else if (board[i - 1][j] == 0) //upper cell is empty
             {
-                temp = i;
 
                 /*
                  * while possible, move tile left.
                  */
-                while (i - 1 >= 0 && board[i - 1][j] == 0) {
+                while (i - 1 >= 0 && board[i - 1][j] == 0)
+                {
                     board[i - 1][j] = board[i][j];
-                    for (k = i + 1; k < ROWS; ++k) {
+                    for (k = i + 1; k < ROWS; ++k)
+                    {
                         board[k - 1][j] = board[k][j];
                     }
                     board[ROWS - 1][j] = 0;
-//                    board[i][j] = 0;
                     i--;
                 }
-//                i = temp;
             }
         }
     }
@@ -417,13 +452,18 @@ void MoveUp() {
  *      checked if can go more to the bottom - if so it continues as was done
  *      before, until it can no more go.
 *******************************************************************************/
-void MoveDown() {
-    int i, j, k, temp;
+void MoveDown()
+{
+    int i, j, k;
 
-    for (j = 0; j < COLS; ++j) {
-        for (i = ROWS - 1; i >= 0; --i) {
-            while (board[i][j] == 0 && IsRestOfColNotEmptyDown(i, j)) {
-                for (k = i - 1; k >= 0; --k) {
+    for (j = 0; j < COLS; ++j)
+    {
+        for (i = ROWS - 1; i >= 0; --i)
+        {
+            while (board[i][j] == 0 && IsRestOfColNotEmptyDown(i, j))
+            {
+                for (k = i - 1; k >= 0; --k)
+                {
                     board[k + 1][j] = board[k][j];
                 }
                 board[0][j] = 0;
@@ -431,7 +471,8 @@ void MoveDown() {
         }
     }
 
-    for (j = 0; j < COLS; ++j) {
+    for (j = 0; j < COLS; ++j)
+    {
         for (i = ROWS - 2; i >= 0; --i) //starts from second last column
         {
             if (board[i][j] == 0) //empty cell, just continue
@@ -440,23 +481,23 @@ void MoveDown() {
             {
                 board[i + 1][j] += board[i][j];
                 board[i][j] = 0;
-            } else if (board[i + 1][j] == 0) //lower cell is empty
+            }
+            else if (board[i + 1][j] == 0) //lower cell is empty
             {
-                temp = i;
 
                 /*
                  * while possible, move tile left.
                  */
-                while (i + 1 < ROWS && board[i + 1][j] == 0) {
+                while (i + 1 < ROWS && board[i + 1][j] == 0)
+                {
                     board[i + 1][j] = board[i][j];
-//                    board[i][j] = 0;
-                    for (k = i - 1; k >= 0; --k) {
+                    for (k = i - 1; k >= 0; --k)
+                    {
                         board[k + 1][j] = board[k][j];
                     }
                     board[0][j] = 0;
                     i++;
                 }
-//                i = temp;
             }
         }
     }
@@ -471,13 +512,15 @@ void MoveDown() {
  * prints it, sets a new time for an alarm (between 1 to 5 seconds) and
  * signals the received pid SIGUSR1.
 *******************************************************************************/
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     pid_t pidToSig;
     struct sigaction sigActALRM, sigActINT;
 
     srand(time(NULL));
 
-    if (argc != 2) {
+    if (argc != 2)
+    {
         perror("usage error in ex2_upd");
         exit(EXIT_FAILURE);
     }
@@ -486,7 +529,8 @@ int main(int argc, char *argv[]) {
     sigActALRM.sa_flags = 0;
     sigemptyset(&(sigActALRM.sa_mask));
     sigActALRM.sa_handler = SIGALRMHandler;
-    if (sigaction(SIGALRM, &sigActALRM, NULL) != 0) {
+    if (sigaction(SIGALRM, &sigActALRM, NULL) != 0)
+    {
         perror("error with SIGALRM sigaction");
         exit(EXIT_FAILURE);
     }
@@ -495,19 +539,21 @@ int main(int argc, char *argv[]) {
     sigaddset(&(sigActINT.sa_mask), SIGALRM);
     sigActINT.sa_flags = 0;
     sigActINT.sa_handler = SIGINTHandler;
-    if (sigaction(SIGINT, &sigActINT, NULL) != 0) {
+    if (sigaction(SIGINT, &sigActINT, NULL) != 0)
+    {
         perror("error with SIGINT sigaction");
         exit(EXIT_FAILURE);
     }
 
     NewGame(pidToSig);
     int key;
-    while (1) {
-        key = 0;
+    while (1)
+    {
         system("stty cbreak -echo");
         key = getchar();
         system("stty cooked echo");
-        switch (key) {
+        switch (key)
+        {
             case 'a':
             case 'A':
                 alarm(0);
