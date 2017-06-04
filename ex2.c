@@ -61,7 +61,6 @@ void SIGINTHandler(int signal)
     {
 //        printf("~~~~~~~~~~SIGINT\n");
         if (updPid) {
-            printf("sending sigint to upd\n");
             if (kill(updPid, SIGKILL) != 0)
                 perror("error sending upd sigint");
             wait(NULL);
@@ -88,7 +87,7 @@ void SIGINTHandler(int signal)
 int main(int argc, char *argv[])
 {
     int y;
-    struct sigaction sigActALRM, sigActUSR1, sigActUSR2, sigActINT;
+    struct sigaction sigActALRM, sigActUSR1, sigActINT;
 
     if (argc != 2) {
         perror("usage error in ex2 main");
