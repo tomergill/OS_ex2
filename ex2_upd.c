@@ -80,7 +80,7 @@ void SIGINTHandler(int signal) {
     if (signal == SIGINT) {
         alarm(0);
         system("stty cooked echo");
-        perror("INTTTTT");
+
         exit(EXIT_SUCCESS);
     }
 }
@@ -366,10 +366,10 @@ int main(int argc, char *argv[]) {
     newGame(pidToSig);
     int key;
     while (1) {
+        key = 0;
         system("stty cbreak -echo");
         key = getchar();
         system("stty cooked echo");
-
         switch (key) {
             case 'a':
             case 'A':

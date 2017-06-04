@@ -64,6 +64,7 @@ void SIGINTHandler(int signal)
             if (kill(updPid, SIGKILL) != 0)
                 perror("error sending upd sigint");
             wait(NULL);
+            //sleep(1);
 //            if (kill(inpPid, SIGKILL) != 0)
 //                perror("error killing inp");
             //wait(NULL);

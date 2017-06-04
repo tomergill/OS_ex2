@@ -1,22 +1,37 @@
+/*******************************************************************************
+ * Student name: Tomer Gill
+ * Student: 318459450
+ * Course Exercise Group: 01 (CS student, actual group is 89231-03)
+ * Exercise name: Exercise 2
+*******************************************************************************/
+
 #include <stdio.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <memory.h>
 #include <unistd.h>
 
-#define ROWS 4
-#define COLS 4
-#define GOAL 2048
+#define ROWS 4 //num of rows
+#define COLS 4 //num of columns
+#define GOAL 2048 //goal tile
 
 #define DEBUG 0 //for debugging purposes
 
-pid_t pidToSig = 0;
+pid_t pidToSig = 0; //pid of process to send signals to (sigint only).
 
 typedef enum {
     NOT_OVER = 0, FULL_BOARD, CONTAINS_GOAL
-} GAME_RESULT;
+} GAME_RESULT; //result of checking if the game has ended.
 
-void printBoard(int board[ROWS][COLS]) {
+/******************************************************************************
+ * function name: PrintBoard
+ * The Input: The board, filled with values.
+ * The output: Prints the board to the screen.
+ * The Function operation: Prints each cell in format | xxxx |, where xxxx is
+ * the number in a 4 digit form (padded with 0s if needed), or blank tile
+ * (|      |) if tile's value is 0.
+*******************************************************************************/
+void PrintBoard(int board[ROWS][COLS]) {
     int row, col;
 
     for (row = 0; row < ROWS; ++row) {
@@ -36,7 +51,14 @@ void printBoard(int board[ROWS][COLS]) {
     printf("\n");
 }
 
-void boardFromInput(int board[ROWS][COLS]) {
+/******************************************************************************
+ * function name: BoardFromInput
+ * The Input: Pointer to an empty board.
+ * The output: Fills the board with values from stdin.
+ * The Function operation: Reads from stdin values seperated by commas, and
+ * put them in board.
+*******************************************************************************/
+void BoardFromInput(int board[ROWS][COLS]) {
     int row, col;
 
     scanf("%d", &board[0][0]);
@@ -54,7 +76,15 @@ void boardFromInput(int board[ROWS][COLS]) {
 //    printf("\n");
 }
 
-GAME_RESULT gameEndCheck(int board[ROWS][COLS]) {
+/******************************************************************************
+ * function name: GameEndCheck
+ * The Input: A full board.
+ * The output: CONTAINS_GOAL if goal is in board (won), FULL_BOARD if board
+ * is full (lost), otherwise NOT_OVER indicating the game isn't over.
+ * The Function operation: Goes over each cell and checks if one of them
+ * contains the goal, and if not if board is full.
+*******************************************************************************/
+GAME_RESULT GameEndCheck(int board[ROWS][COLS]) {
     int i, j, containsGoal = 0, fullBoard = 1;
 
     //check if board contains a 2048 tile
@@ -77,6 +107,15 @@ GAME_RESULT gameEndCheck(int board[ROWS][COLS]) {
         return NOT_OVER;
 }
 
+/******************************************************************************
+ * function name: SIGUSR1Handler
+ * The Input: The signal.
+ * The output: Gets the board in row format and prints it in cell format, and
+ * if the game ends prints the appropriate message,
+ * The Function operation: Scans the board from stdin, prints it to stdout
+ * and goes over it to check if game is over, and if is sends SIGINT to
+ * pidToSig.
+*******************************************************************************/
 void SIGUSR1Handler(int signal) {
     if (signal == SIGUSR1) {
         int board[ROWS][COLS], i, j;
@@ -85,9 +124,9 @@ void SIGUSR1Handler(int signal) {
                 board[i][j] = 0;
             }
         }
-        boardFromInput(board);
-        printBoard(board);
-        GAME_RESULT result = gameEndCheck(board);
+        BoardFromInput(board);
+        PrintBoard(board);
+        GAME_RESULT result = GameEndCheck(board);
         if (result == CONTAINS_GOAL) {
             printf("Congratulations!\n");
             if (kill(pidToSig, SIGINT) != 0)
@@ -105,6 +144,12 @@ void SIGUSR1Handler(int signal) {
     }
 }
 
+/******************************************************************************
+ * function name: SIGINTHandler
+ * The Input: The signal.
+ * The output: Prints "BYE BYE" and exits.
+ * The Function operation: Prints "BYE BYE" and exits.
+*******************************************************************************/
 void SIGINTHandler(int signal) {
     if (signal == SIGINT) {
         printf("BYE BYE\n");
@@ -112,8 +157,14 @@ void SIGINTHandler(int signal) {
     }
 }
 
+/******************************************************************************
+ * function name: main
+ * The Input: A pid to signal SIGINT to when game is over.
+ * The output: Acts as GUI ti the game.
+ * The Function operation: in an endless loop, pausing the program until a
+ * signal will end it.
+*******************************************************************************/
 int main(int argc, char *argv[]) {
-    int i, j;
     struct sigaction sigActUSR, sigActINT;
     sigset_t sigSetUSR, sigSetINT;
 
